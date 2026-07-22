@@ -14,6 +14,19 @@ def h(x):
         return 0.0
     return -x * np.log2(x) - (1.0 - x) * np.log2(1.0 - x)
 
+def analytic_crossover(N):
+    '''Find dephasing crossover analytically for N qubits'''
+    for lam in np.linspace(0, 0.9, 9001):
+        qx_ghz = (1 -  (1 - lam) ** (N/2)) / 2
+        r_ghz = max(0, 1-h(qx_ghz))
+
+        qx_bell = lam / 2
+        r_pair = max(0.0, 1 - h(qx_bell)) / (N-1)
+
+        if r_ghz < r_pair:
+            return lam
+    return None
+
 def ghz_circuit(n, noise=None, gamma=None):
     '''Builds an n-qubit GHZ state, now with noise'''
     q = cirq.LineQubit.range(n)
@@ -146,3 +159,5 @@ with open("results.csv", "w", newline="") as f:
             writer.writerow([noise, n, crossover, ghz_dies])
 
 print("Saved results.csv")
+for N in [3, 4, 5]:
+    print(f"N={N}: analytic crossover = {analytic_crossover(N):.3f}")
