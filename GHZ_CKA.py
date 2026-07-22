@@ -1,8 +1,6 @@
 import cirq
 import numpy as np
-from numpy.random import gamma
 import matplotlib.pyplot as plt
-import csv
 
 SIM = cirq.DensityMatrixSimulator(dtype = np.complex128)
 
@@ -42,6 +40,26 @@ def ghz_circuit(n, noise=None, gamma=None):
             "depolarize": cirq.depolarize,
         } [noise](gamma)
         c.append(channel.on_each(*q))
+    return q, c
+
+def ghz_circuit_asym(gammas_list, noise="phase"):
+    """Builds n qubit GHZ state with asymmetric noise on each qubit"""
+    n = len(gammas_list)
+    q = cirq.LineQubit.range(n)
+    c = cirq.Circuit()
+    c.append(cirq.H(q[0]))
+    for i in range(1, n):
+        c.append(cirq.CNOT(q[0], q[i]))
+
+    channel_fn = {
+        "amplitude": cirq.amplitude_damp,
+        "phase": cirq.phase_damp,
+        "depolarize": cirq.depolarize,
+    } [noise]
+
+    for i in range(n):
+        if gammas_list[i] > 0:
+            c.append(channel_fn(gammas_list[i]).on(q[i]))
     return q, c
 
 def get_expectations(q, c):
@@ -89,93 +107,3 @@ def pairwise_key_rate(n, noise=None, gamma=0.0):
     q_x, q_z_list = qbers(q, c)
     rate = 1 - h(q_x) - max([h(q_z) for q_z in q_z_list])
     return max(0.0, rate) / (n - 1)
-
-
-gammas = np.linspace(0.0, 0.6, 121)
-
-ghz_rates = [ghz_key_rate(3, "phase", g) for g in gammas]
-pw_rates = [pairwise_key_rate(3, "phase", g) for g in gammas]
-
-plt.figure(figsize=(8, 5))
-plt.plot(gammas, ghz_rates, label="GHZ conference", linewidth=2)
-plt.plot(gammas, pw_rates, label="Pairwise BB84", linewidth=2, linestyle="--")
-plt.xlabel("Noise strength  γ")
-plt.ylabel("Key rate (bits per state)")
-plt.title("GHZ vs Pairwise BB84 — dephasing, N=3")
-plt.legend()
-plt.grid(alpha=0.3)
-plt.savefig("crossover.png", dpi=150)
-plt.show()
-
-noise_types = ["phase", "amplitude", "depolarize"]
-group_sizes = [3, 4, 5]
-
-print(f"{'Noise':<12}{'N':<4}{'Crossover': <12}{'GHZ dies':<10}")
-print("-" * 38)
-
-for noise in noise_types:
-    for n in group_sizes:
-        ghz_rates = [ghz_key_rate(n, noise, g) for g in gammas]
-        pw_rates = [pairwise_key_rate(n, noise, g) for g in gammas]
-
-        crossover = None
-        for i in range(len(gammas)):
-            if ghz_rates[i] < pw_rates[i]:
-                crossover = gammas[i]
-                break
-        
-        ghz_dies = None
-        for i in range(len(gammas)):
-            if ghz_rates[i] <= 1e-9:
-                ghz_dies = gammas[i]
-                break
-        
-        cx = f"{crossover:.3f}" if crossover is not None else "--"
-        dz = f"{ghz_dies:.3f}" if ghz_dies is not None else "--"
-        print(f"{noise:<12}{n:<4}{cx:<12}{dz:<10}")
-    print()
-
-with open("results.csv", "w", newline="") as f:
-    writer = csv.writer(f)
-    writer.writerow(["noise", "N", "crossover", "ghz_dies"])
-
-    for noise in noise_types:
-        for n in group_sizes:
-            ghz_rates = [ghz_key_rate(n, noise, g) for g in gammas]
-            pw_rates = [pairwise_key_rate(n, noise, g) for g in gammas]
-
-            crossover = None
-            for i in range(len(gammas)):
-                if ghz_rates[i] < pw_rates[i]:
-                    crossover = round(gammas[i], 3)
-                    break
-
-            ghz_dies = None
-            for i in range(len(gammas)):
-                if ghz_rates[i] <= 1e-9:
-                    ghz_dies = round(gammas[i], 3)
-                    break
-
-            writer.writerow([noise, n, crossover, ghz_dies])
-
-print("Saved results.csv")
-for N in [3, 4, 5]:
-    print(f"N={N}: analytic crossover = {analytic_crossover(N):.3f}")
-
-Ns = [3, 4, 5]
-
-analytic = [analytic_crossover(N) for N in Ns]
-
-simulated = [0.488, 0.410, 0.357]
-
-plt.figure(figsize=(7, 5))
-plt.plot(Ns, analytic, "-", linewidth = 2, label="Analytic", marker="o")
-plt.plot(Ns, simulated, "o", markersize=10, label= "Simulated (Cirq)")
-plt.xlabel("Group Size N")
-plt.ylabel("Crossover noise strength λ")
-plt.title("Dephasing crossover: theory vs simulation")
-plt.grid(alpha=0.3)
-plt.legend()
-plt.xticks(Ns)
-plt.savefig("validation.png", dpi=150)
-plt.show()
