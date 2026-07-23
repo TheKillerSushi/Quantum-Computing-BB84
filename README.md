@@ -14,6 +14,6 @@ According to these simulations, GHZ is better in low noise as it begins at autom
 
 However, adding more participants (more Bobs) makes GHZ protocol worse, and the crossover happens with lower noise with each further person. BB84 isn't affected by this because it only ever involves two people.
 
-Finally, how the noise is distributed matters significantly. Networks with uneven links, eg. one long fiber vs two short ones, the higher rate of noise on the single branch worsens the shared keymore than spreading the total noise evenly. This is not very cleanly described in existing literature to my knowledge, and would potentially be our main novel contribution.
+Finally, how the noise is distributed matters significantly. Networks with uneven links, eg. one long fiber vs two short ones, the higher rate of noise on the single branch worsens the shared keymore than spreading the total noise evenly. This is not very cleanly described in existing literature to our knowledge, and would potentially be our main novel contribution.
 
 The results have also been verified analytically to 3 decimal places.
