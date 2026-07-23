@@ -10,7 +10,7 @@ Both protocols were simulated (in Cirq) with realistic noise, including amplitud
 
 As the noise was increased, the protocols were compared in group sizes of 3, 4, and 5.
 
-According to these simulations, GHZ is better in low noise as it begins at automatically double the key rate of BB84 (1.0 vs 0.5). However, as noise increases, GHZ becomes worse more quickly than BB84, and eventually has a lower key rate. Essentially, above that threshold, GHZ is better, and below, BB84.
+According to these simulations, GHZ is better in low noise as it begins at automatically double the key rate of BB84 (1.0 vs 0.5). However, as noise increases, GHZ becomes worse more quickly than BB84, and eventually has a lower key rate. Essentially, below that threshold, GHZ is better, and below, BB84.
 
 However, adding more participants (more Bobs) makes GHZ protocol worse, and the crossover happens with lower noise with each further person. BB84 isn't affected by this because it only ever involves two people.
 
