@@ -1,6 +1,8 @@
 # Quantum-Computing-BB84
 
-# Noise-Induced Crossover in Multipartite Quantum Key Distribution Ryder, Kidus, and Lochlan
+# Noise-Induced Crossover in Multipartite Quantum Key Distribution 
+
+Ryder Carlson, Kidus Peter, and Lochlan Fitzgerald
 
 We are testing whether sharing one Quantum Key across three or more people at once (through GHZ) holds up better or worse than exchanging keys person to person, through pairwise BB84. The results found were that the answer changes depending on the noise levels of the connection, and how many people are recieving the key.
 
